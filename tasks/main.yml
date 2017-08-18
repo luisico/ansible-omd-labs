@@ -1,0 +1,53 @@
+---
+- name: Add official repo
+  yum_repository: name=omd-labs description='OMD Labs by Labs Console' enabled=no baseurl=http://labs.consol.de/repo/stable/rhel{{ansible_distribution_major_version}}/$basearch gpgcheck=no gpgkey=http://labs.consol.de/repo/stable/RPM-GPG-KEY state=present owner=root group=root mode=0644
+
+- name: Install OMD
+  yum: name={{omd_edition}} enablerepo=omd-labs state=present
+  # TODO: enable xinetd and restart it?
+
+- name: Create site {{omd_site}}
+  command: omd create {{omd_site}} creates=/opt/omd/sites/{{omd_site}}
+
+- name: Find site configuration
+  command: omd config {{omd_site}} show
+  register: omd__r_config
+  changed_when: false
+
+- set_fact:
+    omd_facts: >-
+      {% set key, val = item.split(': ') | map('trim') -%}
+      {{ omd_facts | default({}) | combine({key: val}) }}
+  with_items: '{{omd__r_config.stdout_lines}}'
+
+- name: Stop site if it needs reconfiguring
+  service: name=omd state=stopped
+  when: 'omd_config.items() | difference(omd_facts.items()) != []'
+
+- name: Configure site
+  command: omd config {{omd_site}} set {{item.key}} {{item.value}}
+  register: omd__r_reconfig
+  when: 'omd_facts[item.key] is defined and omd_facts[item.key] != item.value'
+  failed_when: 'omd__r_reconfig.stderr != ""'
+  with_dict: '{{omd_config}}'
+  notify: Restart omd
+  # Note: identifying errors with stderr because exit status is always 0
+
+- name: Activate grafana for hosts
+  replace:
+    path: /opt/omd/sites/test/etc/nagios/conf.d/check_mk_templates.cfg
+    regexp: 'pnp4nagios/index.php/graph\?host=\$HOSTNAME\$&srv=_HOST_.*$'
+    replace: 'grafana/dashboard/script/histou.js?host=$HOSTNAME$&theme=light&annotations=true'
+  when: omd_config['GRAFANA'] == 'on'
+  notify: Reload omd
+
+- name: Activate grafana for services
+  replace:
+    path: /opt/omd/sites/test/etc/nagios/conf.d/check_mk_templates.cfg
+    regexp: 'pnp4nagios/index.php/graph\?host=\$HOSTNAME\$&srv=\$SERVICEDESC\$.*$'
+    replace: 'grafana/dashboard/script/histou.js?host=$HOSTNAME$&service=$SERVICEDESC$&theme=light&annotations=true'
+  when: omd_config['GRAFANA'] == 'on'
+  notify: Reload omd
+
+- name: Start site
+  service: name=omd state=started enabled=yes

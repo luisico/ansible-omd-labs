@@ -1,0 +1,12 @@
+---
+# OMD edition. Available editions are 'omd-labs-edition' or 'omd'
+omd_edition: omd-labs-edition
+
+# Site name
+omd_site: example
+
+# Site configuration.
+omd_config: {}
+  # Example (run 'omd config {{omd_site}} show' for a list of options):
+  # CORE: 'nagios'
+  # DEFAULT_GUI: 'welcome'

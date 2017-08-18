@@ -1,0 +1,6 @@
+---
+- name: Restart omd
+  service: name=omd state=restarted
+
+- name: Reload omd
+  service: name=omd state=reloaded
