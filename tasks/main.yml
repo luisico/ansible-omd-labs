@@ -35,7 +35,7 @@
 
 - name: Activate grafana for hosts
   replace:
-    path: /opt/omd/sites/test/etc/nagios/conf.d/check_mk_templates.cfg
+    path: '/opt/omd/sites/{{omd_site}}/etc/nagios/conf.d/check_mk_templates.cfg'
     regexp: 'pnp4nagios/index.php/graph\?host=\$HOSTNAME\$&srv=_HOST_.*$'
     replace: 'grafana/dashboard/script/histou.js?host=$HOSTNAME$&theme=light&annotations=true'
   when: omd_config['GRAFANA'] == 'on'
@@ -43,7 +43,7 @@
 
 - name: Activate grafana for services
   replace:
-    path: /opt/omd/sites/test/etc/nagios/conf.d/check_mk_templates.cfg
+    path: '/opt/omd/sites/{{omd_site}}/etc/nagios/conf.d/check_mk_templates.cfg'
     regexp: 'pnp4nagios/index.php/graph\?host=\$HOSTNAME\$&srv=\$SERVICEDESC\$.*$'
     replace: 'grafana/dashboard/script/histou.js?host=$HOSTNAME$&service=$SERVICEDESC$&theme=light&annotations=true'
   when: omd_config['GRAFANA'] == 'on'
