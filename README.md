@@ -14,7 +14,7 @@ See `defaults/main.yml` for all options.
 
 Dependencies
 ------------
-EPEL repositories need to be available, ie using role `geerlingguy.repo-epel`.
+EPEL repositories need to be available, ie using role `geerlingguy.repo-epel`. RHEL servers might need subscribe to the `optional` channel/repo, ie `rhel-x86_64-server-optional-7`.
 
 Example Playbook
 ----------------
@@ -29,7 +29,6 @@ TODO
 ----
 - Install a specific version, ie `1.30`.
 - Support multiple sites.
-- Add support for RHEL, ie `subscription-manager repos --enable=rhel-7-server-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-server-optional-rpms`
 - Check if nagios can send notifications.
 - Revert to pnp4nagios graphing if requested, once grafana has been configured.
 - Activate grafana action urls by inheriting from host-perf/srv-perf instead of changing url.
