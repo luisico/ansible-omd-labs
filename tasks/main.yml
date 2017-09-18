@@ -13,6 +13,7 @@
   command: omd config {{omd_site}} show
   register: omd__r_config
   changed_when: false
+  check_mode: no
 
 - set_fact:
     omd_facts: >-
