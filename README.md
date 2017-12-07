@@ -4,6 +4,8 @@ Install OMD Labs and manage one site.
 
 This roles installs OMD Labs edition with default configuration (`Naemon` + `Thruk`). Other components can be chosen by setting options in `omd_config`. If Grafana is activated, this role will also adjust `check_mk` templates to produce the right action urls.
 
+MKPs can also be installing by listing them in `omd_mkps`.
+
 Requirements
 ------------
 See `meta/main.yml`.

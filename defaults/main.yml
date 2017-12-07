@@ -10,3 +10,9 @@ omd_config: {}
   # Example (run 'omd config {{omd_site}} show' for a list of options):
   # CORE: 'nagios'
   # DEFAULT_GUI: 'welcome'
+
+# Extra packages
+# Contains an array of mkps with the following format:
+# - name: package name
+#   url: package url
+omd_mkps: []

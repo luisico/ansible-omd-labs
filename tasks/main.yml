@@ -50,5 +50,29 @@
   when: omd_config['GRAFANA'] == 'on'
   notify: Reload omd
 
+- name: Find installed mkps
+  shell: mkp list {{item.name}}
+  become: yes
+  become_user: '{{omd_site}}'
+  become_flags: -i
+  changed_when: false
+  ignore_errors: true
+  check_mode: no
+  with_items: '{{omd_mkps}}'
+  register: omd__r_mkps
+
+- name: Download mkps
+  get_url: url={{item.item.url}} dest=/tmp mode=0666 owner='{{omd_site}}' group='{{omd_site}}'
+  when: item.rc > 0
+  with_items: '{{omd__r_mkps.results}}'
+
+- name: Install mkps
+  shell: mkp install /tmp/{{item.item.url | basename }}
+  become: yes
+  become_user: '{{omd_site}}'
+  become_flags: -i
+  when: item.rc > 0
+  with_items: '{{omd__r_mkps.results}}'
+
 - name: Start site
   service: name=omd state=started enabled=yes
