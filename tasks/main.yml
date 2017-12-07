@@ -62,12 +62,12 @@
   register: omd__r_mkps
 
 - name: Download mkps
-  get_url: url={{item.item.url}} dest=/tmp mode=0666 owner='{{omd_site}}' group='{{omd_site}}'
+  get_url: url={{item.item.url}} dest='/tmp/{{item.item.name}}.mkp' mode=0666 owner='{{omd_site}}' group='{{omd_site}}'
   when: item.rc > 0
   with_items: '{{omd__r_mkps.results}}'
 
 - name: Install mkps
-  shell: mkp install /tmp/{{item.item.url | basename }}
+  shell: mkp install /tmp/{{item.item.name}}.mkp
   become: yes
   become_user: '{{omd_site}}'
   become_flags: -i
