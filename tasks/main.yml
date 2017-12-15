@@ -6,6 +6,10 @@
   yum: name={{omd_edition}} enablerepo=omd-labs state=present
   # TODO: enable xinetd and restart it?
 
+- name: Install python-pillow
+  yum: name=python-pillow state=present
+  # Note: this is a workaround, OMD should have installed this
+
 - name: Create site {{omd_site}}
   command: omd create {{omd_site}} creates=/opt/omd/sites/{{omd_site}}
 

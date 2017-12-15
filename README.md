@@ -34,6 +34,7 @@ TODO
 - Check if nagios can send notifications.
 - Revert to pnp4nagios graphing if requested, once grafana has been configured.
 - Activate grafana action urls by inheriting from host-perf/srv-perf instead of changing url.
+- Remove installation of python-pillow. OMD should take care of this.
 
 Licence
 -------
