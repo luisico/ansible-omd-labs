@@ -38,7 +38,7 @@
   notify: Restart omd
   # Note: identifying errors with stderr because exit status is always 0
 
-- include: grafana.yml
+- import_tasks: grafana.yml
   when: omd_config['GRAFANA'] == 'on'
 
 - name: Find installed mkps
