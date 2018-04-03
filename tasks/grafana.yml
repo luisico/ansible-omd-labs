@@ -13,6 +13,14 @@
     replace: 'grafana/dashboard/script/histou.js?host=$HOSTNAME$&service=$SERVICEDESC$&theme=light&annotations=true'
   notify: Reload omd
 
+- name: Install mod_ldap if LDAP
+  yum: name=mod_ldap state=present
+  when: omd_ldap_enabled
+
+- name: Configure LDAP authentication in apache
+  template: dest='/opt/omd/sites/{{omd_site}}/etc/apache/conf.d/auth.conf' src=auth.conf.j2 owner={{omd_site}} group={{omd_site}} mode=0644
+  notify: Reload omd
+
 - name: Activate LDAP in grafana
   ini_file: path='/opt/omd/sites/{{omd_site}}/etc/grafana/grafana.ini' section='{{item.section}}' option='{{item.option}}' value='{{item.value}}' owner={{omd_site}} group={{omd_site}} mode=0644
   with_items:
