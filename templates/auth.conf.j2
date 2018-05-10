@@ -1,9 +1,11 @@
+{% if omd_ldap_enabled %}
 <IfModule !mod_ldap.c>
     LoadModule ldap_module /usr/lib64/httpd/modules/mod_ldap.so
 </IfModule>
 <IfModule !mod_authnz_ldap.c>
     LoadModule authnz_ldap_module /usr/lib64/httpd/modules/mod_authnz_ldap.so
 </IfModule>
+{% endif %}
 
 <Location /{{omd_site}}>
   Order allow,deny
@@ -11,8 +13,10 @@
 
   AuthName "OMD Monitoring Site {{omd_site}}"
   AuthType Basic
+{% if omd_ldap_enabled %}
   AuthBasicProvider file ldap
-  AuthUserFile /omd/sites/{{omd_site}}/etc/htpasswd
   AuthLDAPURL "{{'ldaps' if omd_ldap_ssl else 'ldap'}}://{{omd_ldap_host}}:{{omd_ldap_port}}/{{omd_ldap_base}}?{{omd_ldap_uid}}?sub?({{omd_ldap_user_filter}})"
+{% endif %}
+  AuthUserFile /omd/sites/{{omd_site}}/etc/htpasswd
   require valid-user
 </Location>
