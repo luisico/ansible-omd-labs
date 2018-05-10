@@ -4,6 +4,8 @@ Install OMD Labs and manage one site.
 
 This roles installs OMD Labs edition with default configuration (`Naemon` + `Thruk`). Other components can be chosen by setting options in `omd_config`. If Grafana is activated, this role will also adjust `check_mk` templates to produce the right action urls.
 
+LDAP can be configured to work with Grafana using `omd_ldap_*` options. Note that all users need to be in LDAP, including the `omdadmin` administrator for this to work. Note that this has only been tested by switching off `THRUK_COOKIE_AUTH` and turning on `MULTISITE_COOKIE_AUTH` (see `omd_config` above).
+
 MKPs can also be installing by listing them in `omd_mkps`.
 
 Requirements
