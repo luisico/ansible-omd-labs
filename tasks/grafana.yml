@@ -24,7 +24,7 @@
 - name: Activate LDAP in grafana
   ini_file: path='/opt/omd/sites/{{omd_site}}/etc/grafana/grafana.ini' section='{{item.section}}' option='{{item.option}}' value='{{item.value}}' owner={{omd_site}} group={{omd_site}} mode=0644
   with_items:
-    - {section: 'auth.ldap', option: 'enabled', value: '{{omd_ldap_enabled | lower}}'}
+    - {section: 'auth.ldap', option: 'enabled', value: 'false'}
     - {section: 'auth.ldap', option: 'config_file', value: '/omd/sites/{{omd_site}}/etc/grafana/ldap.toml'}
   notify: Reload omd
 
