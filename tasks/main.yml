@@ -53,7 +53,7 @@
   register: omd__r_mkps
 
 - name: Download mkps
-  get_url: url={{item.item.url}} dest='/tmp/{{item.item.name}}.mkp' mode=0666 owner='{{omd_site}}' group='{{omd_site}}'
+  get_url: url={{item.item.url}} dest='/tmp/{{item.item.name}}.mkp' mode=0666 owner='{{omd_site}}' group='{{omd_site}}' force=yes
   when: item.rc > 0
   with_items: '{{omd__r_mkps.results}}'
 
