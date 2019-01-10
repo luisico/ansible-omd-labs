@@ -12,6 +12,11 @@
 
 - name: Create site {{omd_site}}
   command: omd create {{omd_site}} creates=/opt/omd/sites/{{omd_site}}
+  register: omd__r_create
+
+- name: Output new site information
+  debug: msg='{{omd__r_create.stdout_lines}}'
+  when: omd__r_create.changed
 
 - name: Find site configuration
   command: omd config {{omd_site}} show
