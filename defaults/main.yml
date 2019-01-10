@@ -11,6 +11,14 @@ omd_config: {}
   # CORE: 'nagios'
   # DEFAULT_GUI: 'welcome'
 
+# List of patches
+# Each patch supports same options as Ansible's patch module, except `dest`. Only `src` is mandatory.
+omd_patches: []
+  # Example:
+  # - src: my_patch.patch
+  #   backup: yes
+  #   basedir: /opt/omd
+
 # Extra packages
 # Contains an array of mkps with the following format:
 # - name: package name

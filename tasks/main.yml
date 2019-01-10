@@ -6,6 +6,11 @@
   yum: name={{omd_edition}} enablerepo=omd-labs state=present
   # TODO: enable xinetd and restart it?
 
+- name: Apply patches
+  patch: src={{item.src}} backup={{item.backup | default(omit)}} basedir={{item.basedir | default(omit)}} binary={{item.binary | default(omit)}} remote_src={{item.remote_src | default(omit)}} strip={{item.strip | default(omit)}}
+  with_items: '{{omd_patches}}'
+  notify: Restart omd
+
 - name: Install python-pillow
   yum: name=python-pillow state=present
   # Note: this is a workaround, OMD should have installed this
