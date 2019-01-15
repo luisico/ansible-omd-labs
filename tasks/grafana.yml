@@ -37,6 +37,12 @@
     - {section: 'users', option: 'allow_sign_up', value: 'false'}
   notify: Reload omd
 
+- name: Configure dashboards
+  ini_file: path='/opt/omd/sites/{{omd_site}}/etc/grafana/grafana.ini' section='{{item.section}}' option='{{item.option}}' value='{{item.value}}' owner={{omd_site}} group={{omd_site}} mode=0644
+  with_items:
+    - {section: 'dashboard.json', option: 'path', value: '/omd/sites/monit1/var/grafana/dashboards'}
+  notify: Reload omd
+
 - name: Configure LDAP connection in grafana
   template: dest='/opt/omd/sites/{{omd_site}}/etc/grafana/ldap.toml' src=ldap.toml.j2 owner={{omd_site}} group={{omd_site}} mode=0644
   when: omd_ldap_enabled
