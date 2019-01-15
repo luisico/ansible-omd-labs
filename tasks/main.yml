@@ -23,6 +23,15 @@
   debug: msg='{{omd__r_create.stdout_lines}}'
   when: omd__r_create.changed
 
+- name: Add ssh public key to authorized_keys for site user
+  authorized_key: user={{omd_site}} key='{{omd_site_public_key}}'
+
+- name: Add ssh private key for site user
+  copy: dest=/opt/omd/sites/{{omd_site}}/.ssh/id_ed25519 content='{{omd_site_private_key}}' owner={{omd_site}} group={{omd_site}} mode=0600
+
+- name: Add ssh public key for site user
+  copy: dest=/opt/omd/sites/{{omd_site}}/.ssh/id_ed25519.pub content='{{omd_site_public_key}}' owner={{omd_site}} group={{omd_site}} mode=0644
+
 - name: Find site configuration
   command: omd config {{omd_site}} show
   register: omd__r_config
