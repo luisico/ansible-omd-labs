@@ -57,6 +57,10 @@
   notify: Restart omd
   # Note: identifying errors with stderr because exit status is always 0
 
+- name: Configure SSL
+  copy: dest=/opt/omd/sites/{{omd_site}}/etc/apache/system.d/ssl.conf content='{{omd_ssl_config}}' owner={{omd_site}} group={{omd_site}} mode=0644
+  notify: Restart httpd
+
 - import_tasks: grafana.yml
   when: omd_config['GRAFANA'] == 'on'
 

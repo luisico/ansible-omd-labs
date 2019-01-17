@@ -11,6 +11,12 @@ omd_config: {}
   # CORE: 'nagios'
   # DEFAULT_GUI: 'welcome'
 
+# Harden SSL security for apache
+omd_ssl_config: |
+  SSLProtocol All -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
+  SSLCipherSuite HIGH:!aNULL:!MD5:!3DES
+  SSLHonorCipherOrder on
+
 # List of patches
 # Each patch supports same options as Ansible's patch module, except `dest`. Only `src` is mandatory.
 omd_patches: []
