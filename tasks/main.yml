@@ -6,12 +6,31 @@
   yum: name={{omd_edition}} enablerepo=omd-labs state=present
   # TODO: enable xinetd and restart it?
 
+- name: Apply patches
+  patch: src={{item.src}} backup={{item.backup | default(omit)}} basedir={{item.basedir | default(omit)}} binary={{item.binary | default(omit)}} remote_src={{item.remote_src | default(omit)}} strip={{item.strip | default(omit)}}
+  with_items: '{{omd_patches}}'
+  notify: Restart omd
+
 - name: Install python-pillow
   yum: name=python-pillow state=present
   # Note: this is a workaround, OMD should have installed this
 
 - name: Create site {{omd_site}}
   command: omd create {{omd_site}} creates=/opt/omd/sites/{{omd_site}}
+  register: omd__r_create
+
+- name: Output new site information
+  debug: msg='{{omd__r_create.stdout_lines}}'
+  when: omd__r_create.changed
+
+- name: Add ssh public key to authorized_keys for site user
+  authorized_key: user={{omd_site}} key='{{omd_site_public_key}}'
+
+- name: Add ssh private key for site user
+  copy: dest=/opt/omd/sites/{{omd_site}}/.ssh/id_ed25519 content='{{omd_site_private_key}}' owner={{omd_site}} group={{omd_site}} mode=0600
+
+- name: Add ssh public key for site user
+  copy: dest=/opt/omd/sites/{{omd_site}}/.ssh/id_ed25519.pub content='{{omd_site_public_key}}' owner={{omd_site}} group={{omd_site}} mode=0644
 
 - name: Find site configuration
   command: omd config {{omd_site}} show
@@ -38,6 +57,10 @@
   notify: Restart omd
   # Note: identifying errors with stderr because exit status is always 0
 
+- name: Configure SSL
+  copy: dest=/opt/omd/sites/{{omd_site}}/etc/apache/system.d/ssl.conf content='{{omd_ssl_config}}' owner={{omd_site}} group={{omd_site}} mode=0644
+  notify: Restart httpd
+
 - import_tasks: grafana.yml
   when: omd_config['GRAFANA'] == 'on'
 
@@ -53,7 +76,7 @@
   register: omd__r_mkps
 
 - name: Download mkps
-  get_url: url={{item.item.url}} dest='/tmp/{{item.item.name}}.mkp' mode=0666 owner='{{omd_site}}' group='{{omd_site}}'
+  get_url: url={{item.item.url}} dest='/tmp/{{item.item.name}}.mkp' mode=0666 owner='{{omd_site}}' group='{{omd_site}}' force=yes
   when: item.rc > 0
   with_items: '{{omd__r_mkps.results}}'
 

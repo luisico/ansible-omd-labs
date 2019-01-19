@@ -4,3 +4,6 @@
 
 - name: Reload omd
   service: name=omd state=reloaded
+
+- name: Restart httpd
+  service: name=httpd state=restarted
