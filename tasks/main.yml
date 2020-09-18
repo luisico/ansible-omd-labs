@@ -8,7 +8,7 @@
 
 - name: Apply patches
   patch: src={{item.src}} backup={{item.backup | default(omit)}} basedir={{item.basedir | default(omit)}} binary={{item.binary | default(omit)}} remote_src={{item.remote_src | default(omit)}} strip={{item.strip | default(omit)}}
-  with_items: '{{omd_patches}}'
+  loop: '{{omd_patches}}'
   notify: Restart omd
 
 - name: Install python-pillow
@@ -42,7 +42,7 @@
     omd_facts: >-
       {% set key, val = item.split(': ') | map('trim') -%}
       {{ omd_facts | default({}) | combine({key: val}) }}
-  with_items: '{{omd__r_config.stdout_lines}}'
+  loop: '{{omd__r_config.stdout_lines}}'
 
 - name: Stop site if it needs reconfiguring
   service: name=omd state=stopped
@@ -53,7 +53,7 @@
   register: omd__r_reconfig
   when: 'omd_facts[item.key] is defined and omd_facts[item.key] != item.value'
   failed_when: 'omd__r_reconfig.stderr != ""'
-  with_dict: '{{omd_config}}'
+  loop: '{{omd_config | dict2items}}'
   notify: Restart omd
   # Note: identifying errors with stderr because exit status is always 0
 
@@ -72,13 +72,13 @@
   changed_when: false
   ignore_errors: true
   check_mode: no
-  with_items: '{{omd_mkps}}'
+  loop: '{{omd_mkps}}'
   register: omd__r_mkps
 
 - name: Download mkps
   get_url: url={{item.item.url}} dest='/tmp/{{item.item.name}}.mkp' mode=0666 owner='{{omd_site}}' group='{{omd_site}}' force=yes
   when: item.rc > 0
-  with_items: '{{omd__r_mkps.results}}'
+  loop: '{{omd__r_mkps.results}}'
 
 - name: Install mkps
   shell: mkp install /tmp/{{item.item.name}}.mkp
@@ -86,7 +86,7 @@
   become_user: '{{omd_site}}'
   become_flags: -i
   when: item.rc > 0
-  with_items: '{{omd__r_mkps.results}}'
+  loop: '{{omd__r_mkps.results}}'
 
 - name: Start site
   service: name=omd state=started enabled=yes
