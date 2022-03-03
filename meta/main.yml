@@ -1,4 +1,5 @@
 galaxy_info:
+  role_name: omd_labs
   author: Luis Gracia
   description: Install OMD Labs and manage one site
   license: MIT
