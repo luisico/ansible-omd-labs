@@ -7,7 +7,7 @@ omd_site: example
 
 # Site configuration.
 omd_config: {}
-  # Example (run 'omd config {{omd_site}} show' for a list of options):
+  # Example (run 'omd config {{ omd_site }} show' for a list of options):
   # CORE: 'nagios'
   # DEFAULT_GUI: 'welcome'
 

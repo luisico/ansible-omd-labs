@@ -3,13 +3,13 @@ verbose_logging = false
 
 [[servers]]
 # Ldap server host (specify multiple hosts space separated)
-host = "{{omd_ldap_host}}"
+host = "{{ omd_ldap_host }}"
 
 # Default port is 389 or 636 if use_ssl = true
-port = {{omd_ldap_port}}
+port = {{ omd_ldap_port }}
 
 # Set to true if ldap server supports TLS
-use_ssl = {{omd_ldap_ssl | lower}}
+use_ssl = {{ omd_ldap_ssl | lower }}
 
 # Set to true if connect ldap server with STARTTLS pattern (create connection in insecure, then upgrade to secure connection with TLS)
 start_tls = false
@@ -22,22 +22,22 @@ ssl_skip_verify = false
 
 # Search user bind dn
 {% if omd_ldap_bind_dn != '' %}
-bind_dn = "{{omd_ldap_bind_dn}}"
+bind_dn = "{{ omd_ldap_bind_dn }}"
 {% endif %}
 
 # Search user bind password
 # If the password contains # or ; you have to wrap it with trippel quotes. Ex """#password;"""
 {% if omd_ldap_bind_dn != '' %}
-bind_password = "{{omd_ldap_password}}"
+bind_password = "{{ omd_ldap_password }}"
 {% endif %}
 
 # User search filter, for example "(cn=%s)" or "(sAMAccountName=%s)" or "(uid=%s)"
 {% if omd_ldap_user_filter != '' %}
-search_filter = "(&(uid=%s)({{omd_ldap_user_filter}}))"
+search_filter = "(&(uid=%s)({{ omd_ldap_user_filter }}))"
 {% endif %}
 
 # An array of base dns to search through
-search_base_dns = ["{{omd_ldap_base}}"]
+search_base_dns = ["{{ omd_ldap_base }}"]
 
 # In POSIX LDAP schemas, without memberOf attribute a secondary query must be made for groups.
 # This is done by enabling group_search_filter below. You must also set member_of= "cn"
@@ -49,24 +49,24 @@ search_base_dns = ["{{omd_ldap_base}}"]
 
 ## An array of the base DNs to search through for groups. Typically uses ou=groups
 {% if omd_ldap_group_base != '' %}
-group_search_base_dns = ["{{omd_ldap_group_base}}"]
+group_search_base_dns = ["{{ omd_ldap_group_base }}"]
 {% endif %}
 
 # Specify names of the ldap attributes your ldap uses
 [servers.attributes]
 name = "givenName"
 surname = "sn"
-username = "{{omd_ldap_uid}}"
+username = "{{ omd_ldap_uid }}"
 member_of = "memberOf"
-email =  "{{omd_ldap_mail}}"
+email =  "{{ omd_ldap_mail }}"
 
 # Map ldap groups to grafana org roles
 {% for mapping in omd_ldap_group_mappings %}
 [[servers.group_mappings]]
-group_dn = "{{mapping.group_dn}}"
-org_role = "{{mapping.role}}"
+group_dn = "{{ mapping.group_dn }}"
+org_role = "{{ mapping.role }}"
 {% if mapping.org_id is defined %}
-org_id = {{mapping.org_id}}
+org_id = {{ mapping.org_id }}
 {% endif %}
 
 {% endfor %}
