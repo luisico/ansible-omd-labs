@@ -7,16 +7,16 @@
 </IfModule>
 {% endif %}
 
-<Location /{{omd_site}}>
+<Location /{{ omd_site }}>
   Order allow,deny
   Allow from all
 
-  AuthName "OMD Monitoring Site {{omd_site}}"
+  AuthName "OMD Monitoring Site {{ omd_site }}"
   AuthType Basic
 {% if omd_ldap_enabled %}
   AuthBasicProvider file ldap
-  AuthLDAPURL "{{'ldaps' if omd_ldap_ssl else 'ldap'}}://{{omd_ldap_host}}:{{omd_ldap_port}}/{{omd_ldap_base}}?{{omd_ldap_uid}}?sub?({{omd_ldap_user_filter}})"
+  AuthLDAPURL "{{ 'ldaps' if omd_ldap_ssl else 'ldap' }}://{{ omd_ldap_host }}:{{ omd_ldap_port }}/{{ omd_ldap_base }}?{{ omd_ldap_uid }}?sub?({{ omd_ldap_user_filter }})"
 {% endif %}
-  AuthUserFile /omd/sites/{{omd_site}}/etc/htpasswd
+  AuthUserFile /omd/sites/{{ omd_site }}/etc/htpasswd
   require valid-user
 </Location>

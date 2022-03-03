@@ -1,92 +1,143 @@
 ---
 - name: Add official repo
-  yum_repository: name=omd-labs description='OMD Labs by Labs Console' enabled=no baseurl=http://labs.consol.de/repo/stable/rhel{{ansible_distribution_major_version}}/$basearch gpgcheck=no gpgkey=http://labs.consol.de/repo/stable/RPM-GPG-KEY state=present owner=root group=root mode=0644
+  yum_repository:
+    name: omd-labs
+    description: 'OMD Labs by Labs Console'
+    enabled: false
+    baseurl: 'http://labs.consol.de/repo/stable/rhel{{ ansible_distribution_major_version }}/$basearch'
+    gpgcheck: false
+    gpgkey: http://labs.consol.de/repo/stable/RPM-GPG-KEY
+    state: present
+    owner: root
+    group: root
+    mode: '0644'
 
 - name: Install OMD
-  yum: name={{omd_edition}} enablerepo=omd-labs state=present
+  yum:
+    name: '{{ omd_edition }}'
+    enablerepo: omd-labs
+    state: present
   # TODO: enable xinetd and restart it?
 
 - name: Apply patches
-  patch: src={{item.src}} backup={{item.backup | default(omit)}} basedir={{item.basedir | default(omit)}} binary={{item.binary | default(omit)}} remote_src={{item.remote_src | default(omit)}} strip={{item.strip | default(omit)}}
-  loop: '{{omd_patches}}'
+  patch:
+    src: '{{ item.src }}'
+    backup: '{{ item.backup | default(omit) }}'
+    basedir: '{{ item.basedir | default(omit) }}'
+    binary: '{{ item.binary | default(omit) }}'
+    remote_src: '{{ item.remote_src | default(omit) }}'
+    strip: '{{ item.strip | default(omit) }}'
+  loop: '{{ omd_patches }}'
   notify: Restart omd
 
 - name: Install python-pillow
-  yum: name=python-pillow state=present
+  yum:
+    name: python-pillow
+    state: present
   # Note: this is a workaround, OMD should have installed this
 
-- name: Create site {{omd_site}}
-  command: omd create {{omd_site}} creates=/opt/omd/sites/{{omd_site}}
+- name: Create site {{ omd_site }}
+  command: omd create {{ omd_site }} creates='/opt/omd/sites/{{ omd_site }}'
   register: omd__r_create
 
-- name: Output new site information
-  debug: msg='{{omd__r_create.stdout_lines}}'
+- name: Output new site information   # noqa no-handler
+  debug:
+    msg: '{{ omd__r_create.stdout_lines }}'
   when: omd__r_create.changed
 
 - name: Add ssh public key to authorized_keys for site user
-  authorized_key: user={{omd_site}} key='{{omd_site_public_key}}'
+  authorized_key:
+    user: '{{ omd_site }}'
+    key: '{{ omd_site_public_key }}'
 
 - name: Add ssh private key for site user
-  copy: dest=/opt/omd/sites/{{omd_site}}/.ssh/id_ed25519 content='{{omd_site_private_key}}' owner={{omd_site}} group={{omd_site}} mode=0600
+  copy:
+    dest: '/opt/omd/sites/{{ omd_site }}/.ssh/id_ed25519'
+    content: '{{ omd_site_private_key }}'
+    owner: '{{ omd_site }}'
+    group: '{{ omd_site }}'
+    mode: '0600'
 
 - name: Add ssh public key for site user
-  copy: dest=/opt/omd/sites/{{omd_site}}/.ssh/id_ed25519.pub content='{{omd_site_public_key}}' owner={{omd_site}} group={{omd_site}} mode=0644
+  copy:
+    dest: '/opt/omd/sites/{{ omd_site }}/.ssh/id_ed25519.pub'
+    content: '{{ omd_site_public_key }}'
+    owner: '{{ omd_site }}'
+    group: '{{ omd_site }}'
+    mode: '0644'
 
 - name: Find site configuration
-  command: omd config {{omd_site}} show
+  command: omd config {{ omd_site }} show
   register: omd__r_config
   changed_when: false
-  check_mode: no
+  check_mode: false
 
-- set_fact:
+- name: Gather omd facts
+  set_fact:
     omd_facts: >-
       {% set key, val = item.split(': ') | map('trim') -%}
-      {{ omd_facts | default({}) | combine({key: val}) }}
-  loop: '{{omd__r_config.stdout_lines}}'
+      {{  omd_facts | default({}) | combine({key: val})  }}
+  loop: '{{ omd__r_config.stdout_lines }}'
 
 - name: Stop site if it needs reconfiguring
-  service: name=omd state=stopped
+  service:
+    name: omd
+    state: stopped
   when: 'omd_config.items() | difference(omd_facts.items()) != []'
 
 - name: Configure site
-  command: omd config {{omd_site}} set {{item.key}} {{item.value}}
+  command: omd config {{ omd_site }} set {{ item.key }} {{ item.value }}
   register: omd__r_reconfig
   when: 'omd_facts[item.key] is defined and omd_facts[item.key] != item.value'
   failed_when: 'omd__r_reconfig.stderr != ""'
-  loop: '{{omd_config | dict2items}}'
+  loop: '{{ omd_config | dict2items }}'
   notify: Restart omd
   # Note: identifying errors with stderr because exit status is always 0
 
 - name: Configure SSL
-  copy: dest=/opt/omd/sites/{{omd_site}}/etc/apache/system.d/ssl.conf content='{{omd_ssl_config}}' owner={{omd_site}} group={{omd_site}} mode=0644
+  copy:
+    dest: '/opt/omd/sites/{{ omd_site }}/etc/apache/system.d/ssl.conf'
+    content: '{{ omd_ssl_config }}'
+    owner: '{{ omd_site }}'
+    group: '{{ omd_site }}'
+    mode: '0644'
   notify: Restart httpd
 
 - import_tasks: grafana.yml
   when: omd_config['GRAFANA'] == 'on'
 
-- name: Find installed mkps
-  shell: mkp list {{item.name}}
-  become: yes
-  become_user: '{{omd_site}}'
+- name: Find installed mkps   # noqa command-instead-of-shell
+  shell: 'mkp list {{ item.name }}'
+  become: true
+  become_user: '{{ omd_site }}'
   become_flags: -i
   changed_when: false
   ignore_errors: true
-  check_mode: no
-  loop: '{{omd_mkps}}'
+  check_mode: false
+  loop: '{{ omd_mkps }}'
   register: omd__r_mkps
 
 - name: Download mkps
-  get_url: url={{item.item.url}} dest='/tmp/{{item.item.name}}.mkp' mode=0666 owner='{{omd_site}}' group='{{omd_site}}' force=yes
+  get_url:
+    url: '{{ item.item.url }}'
+    dest: '/tmp/{{ item.item.name }}.mkp'
+    mode: '0666'
+    owner: '{{ omd_site }}'
+    group: '{{ omd_site }}'
+    force: true
   when: item.rc > 0
-  loop: '{{omd__r_mkps.results}}'
+  loop: '{{ omd__r_mkps.results }}'
 
-- name: Install mkps
-  shell: mkp install /tmp/{{item.item.name}}.mkp
-  become: yes
-  become_user: '{{omd_site}}'
+- name: Install mkps   # noqa command-instead-of-shell
+  shell: 'mkp install /tmp/{{ item.item.name }}.mkp'
+  become: true
+  become_user: '{{ omd_site }}'
   become_flags: -i
   when: item.rc > 0
-  loop: '{{omd__r_mkps.results}}'
+  loop: '{{ omd__r_mkps.results }}'
 
 - name: Start site
-  service: name=omd state=started enabled=yes
+  service:
+    name: omd
+    state: started
+    enabled: true
